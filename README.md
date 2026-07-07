@@ -2,6 +2,16 @@
 
 You are building **PawPal+**, a Streamlit app that helps a pet owner plan care tasks for their pet.
 
+## ✨ Features
+
+- **Owner & pets** — manage an owner and multiple pets, each with their own list of care tasks.
+- **Tasks** — track title, type (walk/feeding/medication/etc.), duration, priority (1–5), time, and completion.
+- **Sorting by time** — tasks are ordered chronologically (`Scheduler.sort_by_time()`), or by time-then-priority for the plan (`sort_tasks()`).
+- **Filtering** — filter tasks by pet name (case-insensitive) or completion status.
+- **Budget-aware daily plan** — fits the highest-priority tasks into the owner's available minutes and explains what was chosen or skipped.
+- **Conflict warnings** — detects overlapping time windows and returns a warning message instead of crashing.
+- **Daily/weekly recurrence** — completing a recurring task automatically schedules its next occurrence.
+
 ## Scenario
 
 A busy pet owner needs help staying consistent with pet care. They want an assistant that can:
@@ -122,8 +132,6 @@ tests/test_pawpal.py ...........                                         [100%]
 
 ## 📐 Smarter Scheduling
 
-> Fill in once you've implemented scheduling logic.
-
 | Feature | Method(s) | Notes |
 |---------|-----------|-------|
 | Task sorting | `Scheduler.sort_by_time()`, `Scheduler.sort_tasks()` | `sort_by_time()` orders chronologically; `sort_tasks()` orders by time then higher priority |
@@ -134,12 +142,66 @@ tests/test_pawpal.py ...........                                         [100%]
 
 ## 📸 Demo Walkthrough
 
-Describe your app in numbered steps so a reader can follow along without watching a video:
+Run the app with `streamlit run app.py`. The UI is organized top-to-bottom so a
+pet owner can go from setup to a finished plan in one pass.
 
-1. <!-- Describe this step -->
-2. <!-- Describe this step -->
-3. <!-- Describe this step -->
-4. <!-- Describe this step -->
-5. <!-- Add more steps as needed -->
+**Main UI features / actions a user can perform:**
+
+- **Owner setup** — set the owner's name and the *available minutes* they have for pet care today.
+- **Add a pet** — enter a name and species; the pet is stored in `st.session_state` so it persists across interactions.
+- **Add a task** — pick which pet, then set title, type, duration, priority, and time.
+- **Current tasks table** — shows all tasks sorted by time (then priority), with a ✅ for completed ones.
+- **Conflict warnings** — overlapping tasks are flagged inline with a ⚠️ warning; a green "no conflicts" message shows otherwise.
+- **Generate schedule** — builds today's plan within the time budget and offers a "Why this plan?" explanation.
+
+**Example workflow:**
+
+1. Set available minutes to `60`.
+2. Add a pet — *Biscuit (dog)*.
+3. Add three tasks: *Morning walk* (8:00, 30 min, high), *Vet call* (8:10, 20 min, high), *Grooming* (11:00, 45 min, low).
+4. The current-tasks table shows them sorted by time, and a ⚠️ warning appears because the walk and vet call overlap.
+5. Click **Generate schedule** — the plan keeps the two high-priority morning tasks within the 60-minute budget and skips low-priority grooming, with an explanation of why.
+
+**Key Scheduler behaviors shown:** chronological sorting, budget-based selection, priority ordering, conflict warnings, and the plan explanation.
+
+**Sample CLI output** (from `python main.py`):
+
+```
+================================================
+PawPal+ Demo
+================================================
+
+[Sorting] All tasks by time:
+  08:00 — Morning walk
+  08:10 — Vet call
+  09:00 — Breakfast
+  09:30 — Give medication
+  11:00 — Grooming
+
+[Filtering] Tasks for Biscuit:
+  - Breakfast
+  - Morning walk
+
+[Conflict detection]
+  ⚠️ Conflict at 08:00: 'Morning walk' overlaps with 'Vet call'
+
+[Recurring tasks] Completing Biscuit's daily 'Breakfast':
+  Next occurrence created: Breakfast on 2026-07-07
+
+[Filtering] Pending (not completed) tasks for Biscuit:
+  - Morning walk (2026-07-06)
+  - Breakfast (2026-07-07)
+
+================================================
+Today's Schedule
+================================================
+Plan for Alex on 2026-07-06:
+  Time budget: 60 min | scheduled: 55 min across 3 task(s).
+  08:00 — Morning walk (30 min) [priority 5]
+  08:10 — Vet call (20 min) [priority 4]
+  09:30 — Give medication (5 min) [priority 4]
+  Skipped (over budget or lower priority):
+    - Grooming [priority 2]
+```
 
 **Screenshot or video** *(optional)*: <!-- Insert a screenshot or link to a demo video here -->

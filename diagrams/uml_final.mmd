@@ -1,0 +1,80 @@
+classDiagram
+    %% PawPal+ UML — final (matches pawpal_system.py)
+
+    class Owner {
+        +str id
+        +str name
+        +str email
+        +int available_minutes
+        +List~str~ preferences
+        +List~Pet~ pets
+        +add_pet(pet)
+        +remove_pet(pet_id)
+        +get_all_tasks() List~Task~
+    }
+
+    class Pet {
+        +str id
+        +str name
+        +str species
+        +str breed
+        +date birthdate
+        +List~Task~ tasks
+        +add_task(task)
+        +remove_task(task_id)
+        +get_tasks() List~Task~
+    }
+
+    class Task {
+        +str id
+        +str title
+        +TaskType type
+        +int duration_minutes
+        +int priority
+        +datetime scheduled_time
+        +bool completed
+        +RecurrencePattern recurrence
+        +end_time() datetime
+        +check_conflict(other: Task) bool
+        +reschedule(new_time)
+        +mark_complete()
+    }
+
+    class Scheduler {
+        +sort_tasks(tasks) List~Task~
+        +sort_by_time(tasks) List~Task~
+        +filter_by_status(tasks, completed) List~Task~
+        +filter_by_pet(owner, pet_name) List~Task~
+        +find_conflicts(tasks) List~Task~
+        +detect_conflicts(tasks) List~str~
+        +mark_task_complete(pet, task) Task
+        +generate_daily_plan(owner, day) List~Task~
+        +explain_plan(owner, day) str
+    }
+
+    class RecurrencePattern {
+        +str frequency  %% daily, weekly, monthly
+        +int interval
+        +List~int~ weekdays
+        +date until_date
+        +next_occurrence(after: datetime) datetime
+    }
+
+    class TaskType {
+        <<enumeration>>
+        Feeding
+        Walk
+        Medication
+        Appointment
+        Grooming
+        Other
+    }
+
+    Owner "1" -- "*" Pet : owns
+    Pet "1" -- "*" Task : has
+    Task --> TaskType : is a
+    Task --> RecurrencePattern : repeats by
+    Scheduler ..> Owner : builds plan for
+    Scheduler ..> Pet : adds recurring task to
+
+    %% End of final UML

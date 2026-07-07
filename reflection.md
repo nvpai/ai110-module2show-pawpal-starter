@@ -82,10 +82,23 @@ A second tradeoff is in conflict detection (`detect_conflicts()`). I chose to ch
 - How did you use AI tools during this project (for example: design brainstorming, debugging, refactoring)?
 - What kinds of prompts or questions were most helpful?
 
+I used AI across every phase, but for different jobs:
+- **Design brainstorming** — generating the first Mermaid UML and the class skeleton from my brainstormed attributes/methods.
+- **Scaffolding** — turning the UML into dataclass stubs, then fleshing out method bodies.
+- **Algorithm implementation** — sorting with `lambda` keys, `timedelta`-based recurrence, and a lightweight conflict-detection strategy.
+- **Test generation** — drafting the pytest suite and suggesting edge cases (empty pet, exact-time conflicts, back-to-back boundaries).
+- **Documentation** — drafting the Features list and Demo Walkthrough.
+
+The most helpful prompts were **specific and grounded in my files** — e.g. "based on my skeleton, how should the Scheduler retrieve all tasks from the Owner's pets?" and "give me a *lightweight* conflict-detection strategy that returns a warning instead of crashing." Open-ended prompts produced generic code; constraint-loaded prompts produced code that fit my design.
+
 **b. Judgment and verification**
 
 - Describe one moment where you did not accept an AI suggestion as-is.
 - How did you evaluate or verify what the AI suggested?
+
+The AI initially modeled tasks on **both** `Owner` and `Pet`, which meant task data was duplicated in two places. I rejected that and consolidated tasks onto `Pet` as the single source of truth, with `Owner.get_all_tasks()` gathering across pets — this removed a whole class of "which copy is correct?" bugs. I also changed conflict detection from the AI's first idea (exact start-time match) to full interval-overlap checking, because exact-match would miss a 30-min walk overlapping a call 10 minutes later.
+
+I verified suggestions three ways: reading the logic line by line, running `main.py` to watch real output, and running `pytest` to confirm the behavior held (including deliberately adding overlapping tasks to confirm the warning fired).
 
 ---
 
@@ -96,10 +109,14 @@ A second tradeoff is in conflict detection (`detect_conflicts()`). I chose to ch
 - What behaviors did you test?
 - Why were these tests important?
 
+I tested the core behaviors and the algorithmic layer: task completion and addition, chronological sorting, filtering by pet/status, budget-based plan selection, recurrence (a completed daily task spawns tomorrow's occurrence), and conflict detection (overlap, exact-same-time, and a back-to-back non-conflict boundary). I also tested edge cases like a pet with no tasks producing an empty plan without crashing. These matter because sorting, budgeting, and conflict detection are the "smart" parts users rely on — a silent bug there produces a wrong-but-plausible plan, which is worse than an obvious crash.
+
 **b. Confidence**
 
 - How confident are you that your scheduler works correctly?
 - What edge cases would you test next if you had more time?
+
+I'm fairly confident (★★★★☆ / 4 of 5) — all 11 tests pass and cover the main paths and key edges. With more time I'd test weekly/monthly recurrence across month boundaries, time-zone handling, tasks with no scheduled time flowing through the plan, and very large task lists (to confirm the O(n²) conflict check is still acceptable).
 
 ---
 
@@ -109,10 +126,16 @@ A second tradeoff is in conflict detection (`detect_conflicts()`). I chose to ch
 
 - What part of this project are you most satisfied with?
 
+I'm most satisfied with the clean separation between the logic layer (`pawpal_system.py`) and the UI (`app.py`). Because I built and verified the "brain" CLI-first with `main.py` and tests, wiring it into Streamlit was mostly plumbing — and the same methods (`sort_tasks`, `detect_conflicts`, `generate_daily_plan`) powered both the terminal demo and the app.
+
 **b. What you would improve**
 
 - If you had another iteration, what would you improve or redesign?
 
+I'd let the scheduler *use* the conflict information rather than just warn about it — e.g. offer to auto-reschedule the lower-priority task to the next free slot. I'd also make recurrence smarter (respect `weekdays` and `until_date`, which exist on `RecurrencePattern` but aren't fully used yet).
+
 **c. Key takeaway**
 
 - What is one important thing you learned about designing systems or working with AI on this project?
+
+The biggest lesson was that **being the "lead architect" means owning the design decisions even when the AI writes the code.** The AI is excellent at producing plausible code fast, but it will happily introduce duplication or subtle logic gaps (like tasks living in two places, or exact-match conflicts). My job was to hold the mental model of the system, insist on a single source of truth, and verify every suggestion against real output and tests. Using separate chat sessions per phase helped a lot — keeping design, algorithms, and testing in their own contexts stopped earlier decisions from muddying later ones and made each conversation focused.

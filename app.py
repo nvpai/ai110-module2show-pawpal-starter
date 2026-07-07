@@ -91,7 +91,7 @@ else:
 
     all_tasks = owner.get_all_tasks()
     if all_tasks:
-        st.write("Current tasks:")
+        st.write("Current tasks (sorted by time, then priority):")
         st.table(
             [
                 {
@@ -99,10 +99,18 @@ else:
                     "time": t.scheduled_time.strftime("%H:%M") if t.scheduled_time else "--:--",
                     "duration_minutes": t.duration_minutes,
                     "priority": t.priority,
+                    "done": "✅" if t.completed else "",
                 }
                 for t in scheduler.sort_tasks(all_tasks)
             ]
         )
+        # Surface scheduling conflicts as warnings so the owner can fix them.
+        conflicts = scheduler.detect_conflicts(all_tasks)
+        if conflicts:
+            for warning in conflicts:
+                st.warning(warning)
+        else:
+            st.success("No scheduling conflicts. 🎉")
     else:
         st.info("No tasks yet. Add one above.")
 
