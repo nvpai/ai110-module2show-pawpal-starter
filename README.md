@@ -83,10 +83,10 @@ Sample test output:
 
 | Feature | Method(s) | Notes |
 |---------|-----------|-------|
-| Task sorting | | e.g., by priority, duration |
-| Filtering | | e.g., skip tasks if time runs out |
-| Conflict handling | | e.g., overlapping time slots |
-| Recurring tasks | | e.g., daily vs. weekly |
+| Task sorting | `Scheduler.sort_tasks()` | Orders by scheduled time, then higher priority first |
+| Filtering | `Scheduler.generate_daily_plan()` | Fills the owner's `available_minutes` budget highest-priority-first; skips tasks that don't fit |
+| Conflict handling | `Task.check_conflict()`, `Scheduler.find_conflicts()` | Detects overlapping time windows between tasks |
+| Recurring tasks | `RecurrencePattern.next_occurrence()` | Computes next daily/weekly/monthly occurrence |
 
 ## 📸 Demo Walkthrough
 

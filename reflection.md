@@ -55,10 +55,21 @@ My initial UML has four main classes plus two supporting types:
 - What constraints does your scheduler consider (for example: time, priority, preferences)?
 - How did you decide which constraints mattered most?
 
+The scheduler considers three things:
+- **Time budget** — the owner's `available_minutes` caps how much care can be planned in a day. The scheduler adds tasks only while the running total stays within this budget.
+- **Priority** — each task has a priority (1 low – 5 high). When the budget is tight, the scheduler fills it highest-priority-first so the most important tasks always make the cut.
+- **Scheduled time** — used to order the final plan chronologically (and to detect conflicts between overlapping tasks).
+
+I decided **priority mattered most for *selection*** (deciding *which* tasks make it into a limited day) and **time mattered most for *presentation*** (deciding the *order* they appear). This mirrors the real scenario: a busy owner would rather guarantee the walk and medication happen than fit in optional grooming.
+
 **b. Tradeoffs**
 
 - Describe one tradeoff your scheduler makes.
 - Why is that tradeoff reasonable for this scenario?
+
+One tradeoff: the scheduler fills the budget strictly by priority, so a **low-priority task can be dropped even when there is an open time slot later in the day**. For example, with a 60-minute budget the plan keeps the walk, breakfast, and medication (45 min total) but skips grooming — even though grooming is scheduled at 11:00 when nothing else is happening.
+
+This is reasonable for the scenario because the goal is *consistency on what matters*, not packing the calendar. A busy owner benefits more from a short, high-confidence list of essential tasks than from a full agenda where a critical task might get squeezed out. The tradeoff is also transparent — `explain_plan()` shows exactly what was skipped and why — so the owner can raise the budget if they want the extra tasks included.
 
 ---
 
