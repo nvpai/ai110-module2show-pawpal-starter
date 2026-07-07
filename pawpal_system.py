@@ -141,6 +141,23 @@ class Scheduler:
             ),
         )
 
+    def sort_by_time(self, tasks: list[Task]) -> list[Task]:
+        """Return tasks ordered chronologically by scheduled time (unscheduled last)."""
+        return sorted(tasks, key=lambda t: t.scheduled_time or datetime.max)
+
+    def filter_by_status(self, tasks: list[Task], completed: bool = False) -> list[Task]:
+        """Return only the tasks whose completed flag matches the given status."""
+        return [t for t in tasks if t.completed == completed]
+
+    def filter_by_pet(self, owner: Owner, pet_name: str) -> list[Task]:
+        """Return tasks belonging to the pet with the given name (case-insensitive)."""
+        return [
+            t
+            for pet in owner.pets
+            if pet.name.lower() == pet_name.lower()
+            for t in pet.get_tasks()
+        ]
+
     def find_conflicts(self, tasks: list[Task]) -> list[Task]:
         """Return tasks that overlap in time with at least one other task."""
         conflicting: list[Task] = []
@@ -150,6 +167,42 @@ class Scheduler:
                     conflicting.append(task)
                     break
         return conflicting
+
+    def detect_conflicts(self, tasks: list[Task]) -> list[str]:
+        """Return human-readable warning messages for each pair of overlapping tasks."""
+        ordered = self.sort_by_time(tasks)
+        warnings: list[str] = []
+        for i in range(len(ordered)):
+            for j in range(i + 1, len(ordered)):
+                a, b = ordered[i], ordered[j]
+                if a.check_conflict(b):
+                    when = a.scheduled_time.strftime("%H:%M") if a.scheduled_time else "--:--"
+                    warnings.append(
+                        f"⚠️ Conflict at {when}: '{a.title}' overlaps with '{b.title}'"
+                    )
+        return warnings
+
+    def mark_task_complete(self, pet: Pet, task: Task) -> Task | None:
+        """Complete a task; if it recurs, add the next occurrence to the pet and return it.
+
+        Returns the newly created follow-up task, or None for one-off tasks.
+        """
+        task.mark_complete()
+        if task.recurrence is None or task.scheduled_time is None:
+            return None
+        next_time = task.recurrence.next_occurrence(task.scheduled_time)
+        next_task = Task(
+            id=f"{task.id}-{next_time.date().isoformat()}",
+            title=task.title,
+            type=task.type,
+            duration_minutes=task.duration_minutes,
+            priority=task.priority,
+            scheduled_time=next_time,
+            completed=False,
+            recurrence=task.recurrence,
+        )
+        pet.add_task(next_task)
+        return next_task
 
     def _tasks_for_day(self, owner: Owner, day: date) -> list[Task]:
         """Return the owner's uncompleted tasks scheduled on the given day."""

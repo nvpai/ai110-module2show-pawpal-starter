@@ -49,13 +49,38 @@ Paste a sample of your app's CLI or Streamlit output here so a reader can see wh
 Output from running `python main.py`:
 
 ```
-============================================
-PawPal+ — Today's Schedule
-============================================
+================================================
+PawPal+ Demo
+================================================
+
+[Sorting] All tasks by time:
+  08:00 — Morning walk
+  08:10 — Vet call
+  09:00 — Breakfast
+  09:30 — Give medication
+  11:00 — Grooming
+
+[Filtering] Tasks for Biscuit:
+  - Breakfast
+  - Morning walk
+
+[Conflict detection]
+  ⚠️ Conflict at 08:00: 'Morning walk' overlaps with 'Vet call'
+
+[Recurring tasks] Completing Biscuit's daily 'Breakfast':
+  Next occurrence created: Breakfast on 2026-07-07
+
+[Filtering] Pending (not completed) tasks for Biscuit:
+  - Morning walk (2026-07-06)
+  - Breakfast (2026-07-07)
+
+================================================
+Today's Schedule
+================================================
 Plan for Alex on 2026-07-06:
-  Time budget: 60 min | scheduled: 45 min across 3 task(s).
+  Time budget: 60 min | scheduled: 55 min across 3 task(s).
   08:00 — Morning walk (30 min) [priority 5]
-  09:00 — Breakfast (10 min) [priority 5]
+  08:10 — Vet call (20 min) [priority 4]
   09:30 — Give medication (5 min) [priority 4]
   Skipped (over budget or lower priority):
     - Grooming [priority 2]
@@ -83,10 +108,11 @@ Sample test output:
 
 | Feature | Method(s) | Notes |
 |---------|-----------|-------|
-| Task sorting | `Scheduler.sort_tasks()` | Orders by scheduled time, then higher priority first |
-| Filtering | `Scheduler.generate_daily_plan()` | Fills the owner's `available_minutes` budget highest-priority-first; skips tasks that don't fit |
-| Conflict handling | `Task.check_conflict()`, `Scheduler.find_conflicts()` | Detects overlapping time windows between tasks |
-| Recurring tasks | `RecurrencePattern.next_occurrence()` | Computes next daily/weekly/monthly occurrence |
+| Task sorting | `Scheduler.sort_by_time()`, `Scheduler.sort_tasks()` | `sort_by_time()` orders chronologically; `sort_tasks()` orders by time then higher priority |
+| Filtering | `Scheduler.filter_by_pet()`, `Scheduler.filter_by_status()` | Filter tasks by pet name (case-insensitive) or completion status |
+| Budgeting | `Scheduler.generate_daily_plan()` | Fills the owner's `available_minutes` budget highest-priority-first; skips tasks that don't fit |
+| Conflict detection | `Task.check_conflict()`, `Scheduler.detect_conflicts()` | Pairwise overlap check; returns warning messages instead of crashing |
+| Recurring tasks | `Scheduler.mark_task_complete()`, `RecurrencePattern.next_occurrence()` | Completing a daily/weekly task auto-creates the next occurrence via `timedelta` |
 
 ## 📸 Demo Walkthrough
 

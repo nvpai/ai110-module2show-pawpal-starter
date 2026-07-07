@@ -71,6 +71,8 @@ One tradeoff: the scheduler fills the budget strictly by priority, so a **low-pr
 
 This is reasonable for the scenario because the goal is *consistency on what matters*, not packing the calendar. A busy owner benefits more from a short, high-confidence list of essential tasks than from a full agenda where a critical task might get squeezed out. The tradeoff is also transparent — `explain_plan()` shows exactly what was skipped and why — so the owner can raise the budget if they want the extra tasks included.
 
+A second tradeoff is in conflict detection (`detect_conflicts()`). I chose to check for **overlapping durations** (does task A's time window intersect task B's?) rather than only **exact start-time matches**. Exact-match checking would be simpler and faster, but it would miss the common real case where a 30-minute walk at 8:00 collides with a vet call at 8:10. The cost is a slower O(n²) pairwise comparison and a reliance on each task's `duration_minutes` being accurate. For a single owner with a handful of daily tasks this is negligible, and the method only *warns* (returns messages) rather than blocking or auto-rescheduling, leaving the owner in control.
+
 ---
 
 ## 3. AI Collaboration
