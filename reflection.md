@@ -16,7 +16,7 @@ Objects:
     * Methods: add_task(), remove_task(), get_tasks()
 - Task
     * Attributes: id, title, type (TaskType), scheduled_time, duration_minutes, priority (1-5), completed, recurrence
-    * Methods: check_conflict(other), reschedule(), mark_completed()
+    * Methods: check_conflict(other), reschedule(), mark_complete()
 - Scheduler (stateless)
     * Methods: sort_tasks(), find_conflicts(), generate_daily_plan(owner, date), explain_plan(owner, date)
 - Supporting types
