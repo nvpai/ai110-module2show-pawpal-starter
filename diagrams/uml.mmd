@@ -1,15 +1,73 @@
 classDiagram
-    %% Replace the placeholders below with your actual classes, attributes, methods, and relationships.
-    %% Keep this file updated so it matches your final implementation.
+    %% PawPal+ UML
 
-    class ClassName {
-        +type attribute
-        +method() returnType
+    class Owner {
+        +str id
+        +str name
+        +str email
+        +int available_minutes
+        +List~str~ preferences
+        +List~Pet~ pets
+        +add_pet(pet)
+        +remove_pet(pet_id)
+        +get_all_tasks() List~Task~
     }
 
-    class AnotherClass {
-        +type attribute
-        +method() returnType
+    class Pet {
+        +str id
+        +str name
+        +str species
+        +str breed
+        +date birthdate
+        +List~Task~ tasks
+        +add_task(task)
+        +remove_task(task_id)
+        +get_tasks() List~Task~
     }
 
-    ClassName --> AnotherClass : relationship
+    class Task {
+        +str id
+        +str title
+        +TaskType type
+        +datetime scheduled_time
+        +int duration_minutes
+        +int priority
+        +bool completed
+        +RecurrencePattern recurrence
+        +check_conflict(other: Task) bool
+        +reschedule(new_time)
+        +mark_completed()
+    }
+
+    class Scheduler {
+        +sort_tasks(tasks) List~Task~
+        +find_conflicts(tasks) List~Task~
+        +generate_daily_plan(owner, date) List~Task~
+        +explain_plan(owner, date) str
+    }
+
+    class RecurrencePattern {
+        +str frequency  %% e.g., daily, weekly, monthly
+        +int interval
+        +List~int~ weekdays
+        +date until_date
+        +next_occurrence(after: datetime) datetime
+    }
+
+    class TaskType {
+        <<enumeration>>
+        Feeding
+        Walk
+        Medication
+        Appointment
+        Grooming
+        Other
+    }
+
+    Owner "1" -- "*" Pet : owns
+    Pet "1" -- "*" Task : has
+    Task --> TaskType : is a
+    Task --> RecurrencePattern : repeats by
+    Scheduler ..> Owner : builds plan for
+
+    %% End of UML

@@ -2,10 +2,44 @@
 
 ## 1. System Design
 
+Three core actions:
+- Enter pet and owner info
+- Add and edit Task for pets based on owner time and priority
+- View the daily plan with reasoning
+
+Objects:
+- Owner
+    * Attributes: id, name, email, available_minutes (daily time budget), preferences, list of Pets
+    * Methods: add_pet(), remove_pet(), get_all_tasks()
+- Pet
+    * Attributes: id, name, species, breed, birthdate, list of Tasks
+    * Methods: add_task(), remove_task(), get_tasks()
+- Task
+    * Attributes: id, title, type (TaskType), scheduled_time, duration_minutes, priority (1-5), completed, recurrence
+    * Methods: check_conflict(other), reschedule(), mark_completed()
+- Scheduler (stateless)
+    * Methods: sort_tasks(), find_conflicts(), generate_daily_plan(owner, date), explain_plan(owner, date)
+- Supporting types
+    * TaskType: enum (Feeding, Walk, Medication, Appointment, Grooming, Other)
+    * RecurrencePattern: frequency, interval, weekdays, until_date, next_occurrence()
+
+Relationships:
+- Owner "1" — "*" Pet (an owner owns many pets)
+- Pet "1" — "*" Task (each task belongs to one pet)
+- Task references a TaskType and an optional RecurrencePattern
+- Scheduler reads an Owner (and its pets' tasks) to build a daily plan
+
+
 **a. Initial design**
 
-- Briefly describe your initial UML design.
-- What classes did you include, and what responsibilities did you assign to each?
+My initial UML has four main classes plus two supporting types:
+
+- **Owner** — represents the pet owner. Holds identity info (name, email), the daily time budget (`available_minutes`) and `preferences` used as scheduling constraints, and the list of pets. Responsible for managing pets and gathering all tasks across those pets (`get_all_tasks()`).
+- **Pet** — represents one animal (name, species, breed, birthdate) and owns the list of tasks associated with it. Responsible for adding/removing/retrieving its own tasks. Tasks live here as the single source of truth.
+- **Task** — represents one care activity. Holds title, type, scheduled time, duration, priority, completion status, and an optional recurrence. Responsible for its own behavior: detecting conflicts with another task, rescheduling, and marking itself complete.
+- **Scheduler** — a stateless helper that turns an owner's tasks into a daily plan. Responsible for sorting tasks (by priority/time), detecting conflicts, generating the daily plan within the owner's time budget, and explaining the reasoning.
+- **TaskType** (enum) and **RecurrencePattern** support the Task class by categorizing tasks and describing how they repeat.
+
 
 **b. Design changes**
 
