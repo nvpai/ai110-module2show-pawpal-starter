@@ -12,6 +12,18 @@ You are building **PawPal+**, a Streamlit app that helps a pet owner plan care t
 - **Conflict warnings** — detects overlapping time windows and returns a warning message instead of crashing.
 - **Daily/weekly recurrence** — completing a recurring task automatically schedules its next occurrence.
 
+## 🏗️ Architecture
+
+PawPal+ separates its logic layer (`pawpal_system.py`) from the Streamlit UI (`app.py`).
+The core classes (see [diagrams/uml_final.mmd](diagrams/uml_final.mmd)):
+
+- **Owner** — the pet owner. Holds identity info, a daily time budget (`available_minutes`), preferences, and a list of `Pet`s. Provides `add_pet()`, `remove_pet()`, and `get_all_tasks()` (gathers tasks across all pets).
+- **Pet** — one animal (name, species, breed). Owns its list of `Task`s via `add_task()` / `remove_task()` / `get_tasks()`. Tasks live here as the single source of truth.
+- **Task** — one care activity: title, type (`TaskType`), duration, priority, scheduled time, completion status, and optional `RecurrencePattern`. Methods: `check_conflict()`, `reschedule()`, `mark_complete()`.
+- **Scheduler** — the stateless "brain" that operates across all of an owner's pets: sorting, filtering, conflict detection, recurrence, and budget-aware daily plan generation.
+
+Supporting types: **TaskType** (enum) and **RecurrencePattern** (`next_occurrence()`).
+
 ## Scenario
 
 A busy pet owner needs help staying consistent with pet care. They want an assistant that can:
