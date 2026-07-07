@@ -101,3 +101,29 @@ def test_mark_task_complete_no_recurrence_returns_none():
     pet.add_task(task)
     assert Scheduler().mark_task_complete(pet, task) is None
     assert len(pet.get_tasks()) == 1
+
+
+# --- Edge cases -------------------------------------------------------------
+
+def test_empty_owner_produces_empty_plan():
+    """A pet with no tasks yields an empty plan and no conflicts (no crash)."""
+    owner = Owner(id="o1", name="Alex", available_minutes=60)
+    owner.add_pet(Pet(id="p1", name="Biscuit", species="dog"))
+    scheduler = Scheduler()
+    assert scheduler.generate_daily_plan(owner, datetime(2026, 7, 6).date()) == []
+    assert scheduler.detect_conflicts(owner.get_all_tasks()) == []
+
+
+def test_exact_same_time_is_flagged_as_conflict():
+    """Two tasks starting at the exact same time are flagged as a conflict."""
+    a = make_task("t1", duration_minutes=15, scheduled_time=datetime(2026, 7, 6, 8, 0))
+    b = make_task("t2", duration_minutes=15, scheduled_time=datetime(2026, 7, 6, 8, 0))
+    warnings = Scheduler().detect_conflicts([a, b])
+    assert len(warnings) == 1
+
+
+def test_back_to_back_tasks_do_not_conflict():
+    """A task ending exactly when the next begins is not a conflict (boundary case)."""
+    a = make_task("t1", duration_minutes=30, scheduled_time=datetime(2026, 7, 6, 8, 0))
+    b = make_task("t2", duration_minutes=30, scheduled_time=datetime(2026, 7, 6, 8, 30))
+    assert Scheduler().detect_conflicts([a, b]) == []

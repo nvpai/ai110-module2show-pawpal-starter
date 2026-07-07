@@ -90,17 +90,35 @@ Plan for Alex on 2026-07-06:
 
 ```bash
 # Run the full test suite:
-pytest
+python -m pytest
 
 # Run with coverage:
 pytest --cov
 ```
 
+**What the tests cover** (`tests/test_pawpal.py`):
+
+- **Core behavior** — marking a task complete flips its status; adding a task to a pet increases its task count.
+- **Sorting correctness** — `sort_by_time()` returns tasks in chronological order regardless of insertion order.
+- **Filtering** — filtering by pet name (case-insensitive) and by completion status returns the right subset.
+- **Budget scheduling** — `generate_daily_plan()` drops lower-priority tasks that exceed the owner's time budget.
+- **Recurrence logic** — completing a daily task marks it done and auto-creates the next day's occurrence; one-off tasks do not.
+- **Conflict detection** — overlapping and exact-same-time tasks are flagged; back-to-back (non-overlapping) tasks are not.
+- **Edge cases** — a pet with no tasks produces an empty plan and no conflicts without crashing.
+
 Sample test output:
 
 ```
-# Paste your pytest output here
+============================= test session starts ==============================
+platform darwin -- Python 3.12.7, pytest-9.0.3, pluggy-1.6.0
+collected 11 items
+
+tests/test_pawpal.py ...........                                         [100%]
+
+============================== 11 passed in 0.02s ==============================
 ```
+
+**Confidence level: ★★★★☆ (4/5)** — All 11 tests pass and cover the core logic, algorithms, and key edge cases. Held back one star because time-zone handling and multi-day/weekly recurrence over month boundaries aren't yet exercised.
 
 ## 📐 Smarter Scheduling
 
